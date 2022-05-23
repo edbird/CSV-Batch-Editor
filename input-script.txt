@@ -1,0 +1,38 @@
+
+# set program variable for the base working directory
+# the subdirectories used are relative to this path
+set base working directory /proj/work/birdsale/repos/repo3/cpp/Accounting/Valuations/Exe/test_results/ValuationProcessTest
+
+# file which contains a list of subdirectories to operate on
+# these are passed in using a file rather than being listed
+# individually here because they can be obtained using the
+# `find` command
+add subdirectory file subdirlist.txt
+
+# can also be done using
+#add subdirectory SUBDIRECTORY
+# (at least when I implement this)
+
+# set filename
+set input filename ac_pending_transaction.csv
+# since the output filename is the same as the input filename
+# do nothing
+#set output filename ac_pending_transaction.csv
+
+# actual commands to execute
+
+# some program behaviour defaults
+set case-sensitive false
+set delimiter "
+set force delimiter on write false
+
+# set the entire column "deal_record_id" to -1
+set column "deal_record_id" "-1"
+
+# add column after "deal_record_id" column
+add column depot_id after deal_record_id
+add column nostro_id after narrative
+add column beneficiary_id after batch_id
+
+# write output
+write
