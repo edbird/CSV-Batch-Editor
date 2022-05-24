@@ -15,9 +15,7 @@ set subdirectory file subdirlist.txt
 
 # set filename
 set input filename ac_pending_transaction.csv
-# since the output filename is the same as the input filename
-# do nothing
-#set output filename ac_pending_transaction.csv
+set output filename ac_pending_transaction_2.csv
 
 # actual commands to execute
 
