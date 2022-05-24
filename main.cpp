@@ -48,6 +48,11 @@ class CSVMatrixElement
     }
     
 
+    void SetHeaderRow(const bool is_header_row)
+    {
+        m_is_header_row = is_header_row;
+    }
+
     std::string GetString() const
     {
         return m_data;
@@ -148,16 +153,21 @@ class CSVMatrix
             }
         }
 
+        /*
         for(const auto& s : ret)
         {
             std::cout << "split string: " << s << std::endl;
         }
+        */
 
         return ret;
     }
 
     void ReadFromFile(const std::string& filename, const bool first_row_is_header_row)
     {
+        m_rows = 0;
+        m_columns_set = false;
+
         m_filename = filename;
 
         std::ifstream ifs(filename);
@@ -174,7 +184,7 @@ class CSVMatrix
 
             while(GetLine(ifs, line))
             {
-                std::cout << "ReadFromFile: Line: " << line << std::endl;
+                //std::cout << "ReadFromFile: Line: " << line << std::endl;
 
                 // ignore null lines if at end of file TODO
 
@@ -217,13 +227,14 @@ class CSVMatrix
 
                 std::transform(split_string.cbegin(), split_string.cend(), std::back_inserter(new_row), lambda);
                 m_matrix.push_back(new_row);
+                ++ m_rows;
             }
 
             ifs.close();
         }
     }
 
-    void SaveToFile(const std::string& filename) const
+    void WriteToFile(const std::string& filename) const
     {
         std::ofstream ofs(filename);
 
@@ -259,15 +270,22 @@ class CSVMatrix
                     ofs << out_string;
                 }
             }
+            //std::cout << "write " << m_rows << " rows" << std::endl;
 
             ofs.flush();
             ofs.close();
         }
     }
 
-    void SaveToFile() const
+    void WriteToFile() const
     {
-        SaveToFile(m_filename);
+        WriteToFile(m_filename);
+    }
+
+    void AddColumnBefore(const std::string& column_name,
+                         const std::string& new_column_name)
+    {
+        std::cerr << "AddColumnBefore not implemented" << std::endl;
     }
 
     // TODO: version of this with a value
@@ -276,9 +294,45 @@ class CSVMatrix
                         const std::string& new_column_name)
     {
         matrix_row_t::size_type column_index(GetColumnIndex(column_name));
-        AddColumnAfter(column_index, true);
+        AddColumnAfter(column_index, new_column_name, true);
         
         // TODO: first_row_is_header_row not used?
+    }
+
+    // TODO: first_row_is_header_row not used/implemented
+    void AddColumnAfter(matrix_t::size_type column_index,
+                        const std::string& column_name,
+                        const bool first_row_is_header_row)
+    {
+        if(column_index < m_columns)
+        {
+            for(matrix_t::size_type index{0}; index < m_rows; ++ index)
+            {
+                CSVMatrixElement element("", false);
+                if(first_row_is_header_row && index == 0)
+                {
+                    //std::cout << "set column name: " << column_name << std::endl;
+                    element.SetString(column_name);
+                    element.SetHeaderRow(true);
+                }
+
+                auto &row{m_matrix.at(index)};
+                row.insert(row.begin() + column_index, element);
+            }
+
+            ++ m_columns;
+        }
+        else
+        {
+            std::string e
+            {
+                std::string("Error: Attempt to add column after column index ")
+                    + std::to_string(column_index)
+                    + std::string(" which is out of range. Number of columns is ")
+                    + std::to_string(m_columns)
+            };
+            throw std::runtime_error(e);
+        }
     }
 
     matrix_row_t::size_type GetColumnIndex(const std::string& column_name) const
@@ -301,6 +355,15 @@ class CSVMatrix
                     std::string("Error: Could not find column with name ")
                         + column_name
                 };
+
+                /*
+                std::cout << "list of columns" << std::endl;
+                for(auto &col : m_matrix.at(0))
+                {
+                    std::cout << col.GetString() << std::endl;
+                }
+                */
+
                 throw std::runtime_error(e);
             }
 
@@ -356,9 +419,14 @@ class CSVMatrix
     {
         if(column_index < m_columns)
         {
-            for(matrix_row_t::size_type i(0); i < m_rows; ++ i)
+            for(matrix_row_t::size_type index{0}; index < m_rows; ++ index)
             {
-                m_matrix.at(i).at(column_index).SetString(value);
+                if(first_row_is_header_row && index == 0)
+                {
+                    continue;
+                }
+
+                m_matrix.at(index).at(column_index).SetString(value);
             }
         }
         else
@@ -569,7 +637,7 @@ class MainClass
                 else if(line.find(command_set_output_filename) == 0)
                 {
                     // add 1 for space
-                    std::string remaining(line.substr(command_set_input_filename.size() + 1));
+                    std::string remaining(line.substr(command_set_output_filename.size() + 1));
 
                     if(IsValidFilename(remaining))
                     {
@@ -659,7 +727,7 @@ class MainClass
                             std::string line;
                             while(GetLine(ifs, line))
                             {
-                                std::cout << "Got line: " << line << std::endl;
+                                //std::cout << "Got line: " << line << std::endl;
                                 if(IsValidPath(line))
                                 {
                                     m_subdirectory.push_back(line);
@@ -808,11 +876,11 @@ class MainClass
                             {
                                 if(locator == string_after)
                                 {
-                                    csvmatrix.AddColumnAfter(existing_column_name, column_name, value);
+                                    csvmatrix.AddColumnAfter(existing_column_name, column_name);
                                 }
                                 else if(locator == string_before)
                                 {
-                                    csvmatrix.AddColumnBefore(existing_column_name, column_name, value);
+                                    csvmatrix.AddColumnBefore(existing_column_name, column_name);
                                 }
                             }
                         }
@@ -842,6 +910,25 @@ class MainClass
                     }
                 }
 
+            }
+        }
+        // TODO: this should be in the same place as the read command?
+        else if(command.find(command_write) == 0)
+        {
+            if(m_output_filename.size() > 0)
+            {
+                for(auto& csvmatrix : m_csvmatrix)
+                {
+                    csvmatrix.WriteToFile(m_output_filename);
+                }
+            }
+            else
+            {
+                // TODO: assumes this is set
+                for(auto& csvmatrix : m_csvmatrix)
+                {
+                    csvmatrix.WriteToFile(m_input_filename);
+                }
             }
         }
         else
