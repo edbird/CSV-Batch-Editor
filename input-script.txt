@@ -7,7 +7,7 @@ set base working directory /proj/work/birdsale/repos/repo3/cpp/Accounting/Valuat
 # these are passed in using a file rather than being listed
 # individually here because they can be obtained using the
 # `find` command
-add subdirectory file subdirlist.txt
+set subdirectory file subdirlist.txt
 
 # can also be done using
 #add subdirectory SUBDIRECTORY
@@ -26,8 +26,12 @@ set case-sensitive false
 set delimiter "
 set force delimiter on write false
 
+# add deal_record_id column
+add column deal_record_id after custodial_account_id
+
 # set the entire column "deal_record_id" to -1
-set column "deal_record_id" "-1"
+#set column "deal_record_id" "-1"
+set column deal_record_id -1
 
 # add column after "deal_record_id" column
 add column depot_id after deal_record_id
