@@ -917,17 +917,47 @@ class MainClass
         {
             if(m_output_filename.size() > 0)
             {
-                for(auto& csvmatrix : m_csvmatrix)
+                const std::string path_delimiter{"/"};
+
+                auto sd_it{m_subdirectory.cbegin()};
+                auto m_it{m_csvmatrix.cbegin()};
+                for(;
+                    m_it != m_csvmatrix.cend();
+                    ++ sd_it, ++ m_it)
+                //for(auto& csvmatrix : m_csvmatrix)
                 {
-                    csvmatrix.WriteToFile(m_output_filename);
+                    std::string subdirectory{*sd_it};
+
+                    std::string full_path
+                    {
+                        m_base_working_directory + path_delimiter + subdirectory + path_delimiter + m_output_filename
+                    };
+
+                    auto& csvmatrix{*m_it};
+                    csvmatrix.WriteToFile(full_path);
                 }
             }
             else
             {
+                const std::string path_delimiter{"/"};
+
                 // TODO: assumes this is set
-                for(auto& csvmatrix : m_csvmatrix)
+                auto sd_it{m_subdirectory.cbegin()};
+                auto m_it{m_csvmatrix.cbegin()};
+                for(;
+                    m_it != m_csvmatrix.cend();
+                    ++ sd_it, ++ m_it)
+                //for(auto& csvmatrix : m_csvmatrix)
                 {
-                    csvmatrix.WriteToFile(m_input_filename);
+                    std::string subdirectory{*sd_it};
+
+                    std::string full_path
+                    {
+                        m_base_working_directory + path_delimiter + subdirectory + path_delimiter + m_input_filename
+                    };
+
+                    auto& csvmatrix{*m_it};
+                    csvmatrix.WriteToFile(full_path);
                 }
             }
         }
@@ -1017,6 +1047,12 @@ class MainClass
     // all the objects which store data are contained in a list
     std::list<CSVMatrix> m_csvmatrix;
 
+    // Note: Assume a 1-to-1 mapping between subdirectory names
+    // and CSVMatrix objects
+    // it means that the index of the strings in m_subdirectory
+    // must match the index of the strings in m_csvmatrix
+    // otherwise the wrong objects will be written to the wrong
+    // directories
 
 
     // valid commands
