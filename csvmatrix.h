@@ -62,97 +62,20 @@ class CSVMatrix
 
     bool ColumnExists(const std::string& column_name) const;
 
-    void SetColumn(const std::string& column_name, const std::string& value)
-    {
-        matrix_row_t::size_type column_index(GetColumnIndex(column_name));
-        SetColumn(column_index, value, true);
-    }
+    void SetColumn(const std::string& column_name, const std::string& value);
 
     // TODO: first_row_is_header_row not used?
-    void SetColumn(const matrix_t::size_type column_index, const std::string& value, const bool first_row_is_header_row)
-    {
-        if(column_index < m_columns)
-        {
-            for(matrix_row_t::size_type index{0}; index < m_rows; ++ index)
-            {
-                if(first_row_is_header_row && index == 0)
-                {
-                    continue;
-                }
+    void SetColumn(const matrix_t::size_type column_index, const std::string& value, const bool first_row_is_header_row);
 
-                m_matrix.at(index).at(column_index).SetString(value);
-            }
-        }
-        else
-        {
-            std::string e
-            {
-                std::string("Error: Cannot set column values for column with index ")
-                    + std::to_string(column_index)
-                    + std::string(". Number of columns is ")
-                    + std::to_string(m_columns)
-            };
-            throw std::runtime_error(e);
-        }
-    }
-
-    void DeleteColumn(const std::string& column_name)
-    {
-        matrix_row_t::size_type column_index(GetColumnIndex(column_name));
-        DeleteColumn(column_index);
-    }
+    void DeleteColumn(const std::string& column_name);
 
     // is it row major or column major?
-    void DeleteColumn(const matrix_t::size_type column_index)
-    {
-        if(column_index < m_columns)
-        {
-            for(matrix_t::size_type index{0}; index < m_rows; ++ index)
-            {
-                auto &row{m_matrix.at(index)};
-                row.erase(row.begin() + column_index);
-            }
-
-            -- m_columns;
-        }
-        else
-        {
-            std::string e
-            {
-                std::string("Error: Attempt to delete column after column index ")
-                    + std::to_string(column_index)
-                    + std::string(" which is out of range. Number of columns is ")
-                    + std::to_string(m_columns)
-            };
-            throw std::runtime_error(e);
-        }
-    }
+    void DeleteColumn(const matrix_t::size_type column_index);
 
     // is it row major or column major?
     // it is row major
     // which means fix the row index to be 0, read all elements from the vector
-    std::string GetColumnNamesAsString() const
-    {
-        if(m_rows > 0)
-        {
-            std::string column_names;
-
-            for(const auto& element : m_matrix.at(0))
-            {
-                // TODO: something better than this
-                const std::string column_name(element.GetString());
-                std::string tmp(column_name);
-                const std::string nl("\n");
-                column_names += tmp + nl;
-            }
-
-            return column_names;
-        }
-        else
-        {
-            return std::string("Error: Number of rows is 0");
-        }
-    }
+    std::string GetColumnNamesAsString() const;
 
     private:
 

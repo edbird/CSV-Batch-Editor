@@ -1,6 +1,11 @@
 
 #include "csvmatrix.h"
 
+#include <string>
+#include <vector>
+#include <iostream>
+#include <stdexcept>
+
 
 
 void CSVMatrix::SetColumn(const std::string& column_name, const std::string& value)
@@ -8,6 +13,7 @@ void CSVMatrix::SetColumn(const std::string& column_name, const std::string& val
     matrix_row_t::size_type column_index(GetColumnIndex(column_name));
     SetColumn(column_index, value, true);
 }
+
 
 // TODO: first_row_is_header_row not used?
 void CSVMatrix::SetColumn(const matrix_t::size_type column_index, const std::string& value, const bool first_row_is_header_row)

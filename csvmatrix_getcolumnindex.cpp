@@ -1,6 +1,12 @@
 #include "csvmatrix.h"
 
 
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <stdexcept>
+
 
 bool CSVMatrix::ColumnExists(const std::string& column_name) const
 {
