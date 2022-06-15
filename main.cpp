@@ -12,26 +12,15 @@
 
 
 
-void EraseCRLF(std::string &s)
-{
-    s.erase(std::remove(s.begin(), s.end(), '\r' ), s.end());
-    s.erase(std::remove(s.begin(), s.end(), '\n' ), s.end());
-}
 
-template<class CharT, class Traits, class Allocator>
-std::basic_istream<CharT, Traits>& GetLine(
-    std::basic_istream<CharT,Traits>& input,
-    std::basic_string<CharT,Traits,Allocator>& str)
-{
-    auto& ret = std::getline(input, str);
-    EraseCRLF(str);
-    return ret;
-}
+
 
 
 #include "csvmatrixelement.h"
 #include "csvmatrix.h"
 
+
+#include "mygetline.h"
 
 // generic "main program" class
 // drives operation of batch csv file editor
@@ -82,7 +71,7 @@ class MainClass
             std::string line;
             while(std::getline(ifs, line))
             {
-                EraseCRLF(line);
+                myfunctions::EraseCRLF(line);
 
                 ++ line_number;
 
@@ -290,7 +279,7 @@ class MainClass
                         else
                         {
                             std::string line;
-                            while(GetLine(ifs, line))
+                            while(myfunctions::GetLine(ifs, line))
                             {
                                 //std::cout << "Got line: " << line << std::endl;
                                 if(IsValidPath(line))
