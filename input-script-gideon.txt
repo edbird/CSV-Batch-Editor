@@ -1,0 +1,88 @@
+
+# set program variable for the base working directory
+# the subdirectories used are relative to this path
+set base working directory /proj/work/birdsale/diff-gideon/
+
+# file which contains a list of subdirectories to operate on
+# these are passed in using a file rather than being listed
+# individually here because they can be obtained using the
+# `find` command
+set subdirectory file subdirlist.txt
+
+# can also be done using
+#add subdirectory SUBDIRECTORY
+# (at least when I implement this)
+
+# set filename
+set input filename trialbalance2.csv
+set output filename trialbalance2-modified.csv
+
+# actual commands to execute
+
+# some program behaviour defaults
+set case-sensitive false
+set delimiter "
+set force delimiter on write false
+
+# delete columns
+delete column Period date
+delete column Ledger Id
+delete column Parent Account Code
+delete column Parent Account Name
+delete column Sub-Account Name
+delete column Strategy
+# need to account for the space in the name!
+# note: actually, quotes are not required around
+# the column names, because the parser reads to the
+# end of the line
+# however change this in future to make more robust
+
+delete column Book Name
+delete column Book External Id
+delete column Security Name
+delete column ExternalSMID
+delete column Counterparty Name
+delete column Counterparty ExternalId
+delete column Counterparty AccountTypeId
+delete column Counterparty AccountTypeName
+delete column Risk Counterparty Id
+delete column Risk Counterparty Name
+delete column Risk Counterparty ExternalId
+delete column Risk Counterparty AccountTypeId
+delete column Risk Counterparty AccountTypeName
+delete column Custodial Acc Name
+delete column Custodial Acc ExternalId
+delete column Client Id
+delete column Client Name
+delete column Client ExternalId
+delete column Client AccountTypeId
+delete column Client AccountTypeName
+delete column Salesperson Id
+delete column Salesperson Name
+delete column Position Description
+
+# reorder existing columns
+#reorder column Sub-Account Code before Currency
+
+# rename existing columns
+#rename column Currency currency
+#rename column Sub-Account Code account_number
+#rename column Book Id aggregations/book_id
+#rename column SMID aggegations/smid
+#rename column Counterparty Id aggregations/counterparty_id
+#rename column Client Id aggregations/client_id
+
+# add deal_record_id column
+#add column deal_record_id after custodial_account_id
+
+# set the entire column "deal_record_id" to -1
+#set column "deal_record_id" "-1"
+#set column deal_record_id -1
+
+# add column after "deal_record_id" column
+#add column depot_id after deal_record_id
+#add column nostro_id after narrative
+#add column beneficiary_id after batch_id
+
+# write output
+write

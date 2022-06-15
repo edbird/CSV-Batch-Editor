@@ -1,0 +1,12 @@
+diff-standard-none
+diff-standard-td
+diff-standard-vd
+diff-standard-sd
+diff-currency-none
+diff-currency-td
+diff-currency-vd
+diff-currency-sd
+diff-base-none
+diff-base-td
+diff-base-vd
+diff-base-sd
