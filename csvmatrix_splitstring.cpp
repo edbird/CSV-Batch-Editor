@@ -1,6 +1,11 @@
 #include "csvmatrix.h"
 
 
+#include <string>
+#include <vector>
+#include <iostream>
+
+
 
 
 std::vector<std::string> CSVMatrix::SplitStringByToken(std::string s, const std::string& token)

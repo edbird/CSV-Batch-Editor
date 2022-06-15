@@ -1,5 +1,12 @@
 #include "csvmatrix.h"
 
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <fstream>
+#include <stdexcept>
+
 
 
 void CSVMatrix::ReorderColumnAfter(const std::string& reference_column_name,
