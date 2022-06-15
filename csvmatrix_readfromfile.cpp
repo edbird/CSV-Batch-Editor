@@ -7,7 +7,7 @@
 #include <fstream>
 #include <stdexcept>
 
-
+#include "mygetline.h"
 
 
 void CSVMatrix::ReadFromFile(const std::string& filename, const bool first_row_is_header_row)
@@ -32,7 +32,7 @@ void CSVMatrix::ReadFromFile(const std::string& filename, const bool first_row_i
 
         std::size_t line_number = 0;
 
-        while(GetLine(ifs, line))
+        while(myfunctions::GetLine(ifs, line))
         {
             ++ line_number;
 

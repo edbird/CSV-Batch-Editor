@@ -9,7 +9,7 @@
 // is it row major or column major?
 // it is row major
 // which means fix the row index to be 0, read all elements from the vector
-std::string GetColumnNamesAsString() const
+std::string CSVMatrix::GetColumnNamesAsString() const
 {
     if(m_rows > 0)
     {

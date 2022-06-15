@@ -1,12 +1,16 @@
 #ifndef CSVMATRIX_H
 #define CSVMATRIX_H
 
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <stdexcept>
+
+
+#include "csvmatrixelement.h"
 
 
 // class to store and manipulate CSV data
