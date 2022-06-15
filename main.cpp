@@ -99,6 +99,104 @@ class CSVMatrix
 
     }
 
+    std::vector<std::string> SplitStringByTokenQuoted(std::string s, const std::string& token, const std::string& token_quote)
+    {
+        std::vector<std::string> ret;
+
+        for(;;)
+        {
+            std::string::size_type pos(s.find(token));
+            std::string::size_type pos_quote(s.find(token_quote));
+
+            if(pos != std::string::npos)
+            {
+                // A (logic block)
+
+                // found a quote, and it occurs before the next comma
+                if(pos_quote < pos)
+                {
+                    // need to find another quote
+                    std::string::size_type pos_quote_2{s.find(token_quote, pos_quote + 1)};
+                        // should it be quote + 1 here? can this overflow the length of the string? is that a problem?
+
+                    if(pos_quote_2 != std::string::npos)
+                    {
+                        // find the next comma following the second quote
+                        pos = s.find(token, pos_quote_2 + 1);
+
+                        // might be able to move this logic block, becuase it is the same
+                        // as the logic block which encloses this block (marked A)
+                        if(pos == std::string::npos)
+                        {
+                            // delimiter not found, add remaining string to vector
+                            ret.push_back(s);
+                            break;
+                        }
+                        // else
+                        // continue with existing logic and end of A
+                    }
+                }
+                // end of A
+
+                ////////////////////////////////////////////////////////////////////
+                // "Normal" execution block where next string, delimited by comma //
+                // does NOT contain a quote character                             //
+                ////////////////////////////////////////////////////////////////////
+
+                // TODO: need to check pos > 0 for all calls to substr
+                if(pos > 0)
+                {
+                    std::string subs(s.substr(0, pos));
+                    ret.push_back(subs);
+
+                    if(pos + 1 < s.size())
+                    {
+                        // not the last character in the string
+                        s = s.substr(pos + 1);
+                    }
+                    else
+                    {
+                        // last character in string
+                        // and delimiter was found
+                        ret.push_back(std::string());
+                        break; // TODO: no idea if this logic is correct here!
+                    }
+                }
+                else // no longer need this?
+                {
+                    ret.push_back(std::string());
+
+                    if(pos + 1 < s.size())
+                    {
+                        // not the last character in the string
+                        s = s.substr(pos + 1);
+                    }
+                    else
+                    {
+                        // last character in string
+                        // and delimiter NOT found
+                        break; // TODO: no idea if this logic is correct here!
+                    }
+                }
+            }
+            else
+            {
+                // delimiter not found, add remaining string to vector
+                ret.push_back(s);
+                break;
+            }
+        }
+
+        /*
+        for(const auto& s : ret)
+        {
+            std::cout << "split string: " << s << std::endl;
+        }
+        */
+
+        return ret;
+    }
+
     std::vector<std::string> SplitStringByToken(std::string s, const std::string& token)
     {
         std::vector<std::string> ret;
@@ -181,14 +279,20 @@ class CSVMatrix
         {
             std::string line;
             const std::string comma_token(",");
+            const std::string quote_token("\"");
+
+            std::size_t line_number = 0;
 
             while(GetLine(ifs, line))
             {
+                ++ line_number;
+
                 //std::cout << "ReadFromFile: Line: " << line << std::endl;
 
                 // ignore null lines if at end of file TODO
 
-                std::vector<std::string> split_string = SplitStringByToken(line, comma_token);
+                //std::vector<std::string> split_string = SplitStringByToken(line, comma_token);
+                std::vector<std::string> split_string = SplitStringByTokenQuoted(line, comma_token, quote_token);
 
                 if(!m_columns_set)
                 {
@@ -201,7 +305,9 @@ class CSVMatrix
                     {
                         std::string e
                         {
-                            std::string("Error: Number of columns is ")
+                            std::string("Error: (Line ")
+                                + std::to_string(line_number)
+                                + std::string(") Number of columns is ")
                                 + std::to_string(split_string.size())
                                 + std::string(" expected ")
                                 + std::to_string(m_columns)
@@ -335,6 +441,29 @@ class CSVMatrix
         }
     }
 
+    void ReorderColumnAfter(const std::string& reference_column_name,
+                            const std::string& column_to_move_name)
+    {
+        matrix_row_t::size_type reference_column_index{GetColumnIndex(reference_column_name)};
+        matrix_row_t::size_type column_to_move_index{GetColumnIndex(column_to_move_name)};
+
+        if(reference_column_index != column_to_move_index)
+        {
+            if(reference_column_index < m_columns && column_to_move_index < m_columns)
+            {
+                // TODO: steps:
+                // extract the existing column (copy it) to a new CSVMatrix object
+                // delete the existing column
+                // insert a new column into the CSVMatrix with values referenced from the new CSVMatrix object
+                // insert entire object, not a column indexed from that object
+            }
+        }
+        else
+        {
+            // TODO: exception
+        }
+    }
+
     matrix_row_t::size_type GetColumnIndex(const std::string& column_name) const
     {
         if(m_matrix.size() > 0)
@@ -415,7 +544,7 @@ class CSVMatrix
     }
 
     // TODO: first_row_is_header_row not used?
-    void SetColumn(matrix_t::size_type column_index, const std::string& value, const bool first_row_is_header_row)
+    void SetColumn(const matrix_t::size_type column_index, const std::string& value, const bool first_row_is_header_row)
     {
         if(column_index < m_columns)
         {
@@ -439,6 +568,64 @@ class CSVMatrix
                     + std::to_string(m_columns)
             };
             throw std::runtime_error(e);
+        }
+    }
+
+    void DeleteColumn(const std::string& column_name)
+    {
+        matrix_row_t::size_type column_index(GetColumnIndex(column_name));
+        DeleteColumn(column_index);
+    }
+
+    // is it row major or column major?
+    void DeleteColumn(const matrix_t::size_type column_index)
+    {
+        if(column_index < m_columns)
+        {
+            for(matrix_t::size_type index{0}; index < m_rows; ++ index)
+            {
+                auto &row{m_matrix.at(index)};
+                row.erase(row.begin() + column_index);
+            }
+
+            -- m_columns;
+        }
+        else
+        {
+            std::string e
+            {
+                std::string("Error: Attempt to delete column after column index ")
+                    + std::to_string(column_index)
+                    + std::string(" which is out of range. Number of columns is ")
+                    + std::to_string(m_columns)
+            };
+            throw std::runtime_error(e);
+        }
+    }
+
+    // is it row major or column major?
+    // it is row major
+    // which means fix the row index to be 0, read all elements from the vector
+    std::string GetColumnNamesAsString() const
+    {
+        if(m_rows > 0)
+        {
+            std::string column_names;
+
+            for(const auto& element : m_matrix.at(0))
+            {
+                // TODO: something better than this
+                const std::string column_name(element.GetString());
+                std::string tmp(column_name);
+                const std::string nl("\n");
+                column_names += tmp + nl;
+            }
+
+            return column_names;
+        }
+        else
+        {
+            return std::string("Error: Number of rows is 0");
         }
     }
 
@@ -677,6 +864,20 @@ class MainClass
                     // TODO: check the commands are valid here
                     commands_list.push_back(line);
                 }
+                else if(line.find(command_delete_column) == 0)
+                {
+                    // commands need to be saved for later
+                    // done't check for valid commands here
+                    // TODO: check the commands are valid here
+                    commands_list.push_back(line);
+                }
+                else if(line.find(command_reorder_column) == 0)
+                {
+                    // commands need to be saved for later
+                    // done't check for valid commands here
+                    // TODO: check the commands are valid here
+                    commands_list.push_back(line);
+                }
                 else if(line.find(command_write) == 0)
                 {
                     // commands need to be saved for later
@@ -911,7 +1112,109 @@ class MainClass
                 }
 
             }
+            // TODO: else
         }
+        else if(command.find(command_delete_column) == 0)
+        {
+            std::string remaining{command.substr(command_delete_column.size() + 1)};
+
+            std::string column_name{remaining};
+
+            if(column_name.size() > 0)
+            {
+
+                std::cout << "parsed command: "
+                            << command_delete_column << " "
+                            << column_name << std::endl;
+
+                /*
+                std::cout << "debug: printing column header names" << std::endl;
+                for(auto& csvmatrix : m_csvmatrix)
+                {
+                    std::cout << csvmatrix.GetColumnNamesAsString() << std::endl;
+                }
+                */
+
+                for(auto& csvmatrix : m_csvmatrix)
+                {
+                    csvmatrix.DeleteColumn(column_name);
+                }
+
+            }
+            // TODO: else
+        }
+
+
+        else if(command.find(command_reorder_column) == 0)
+        {
+            std::string remaining{command.substr(command_reorder_column.size() + 1)};
+
+            //std::string column_name{GetNextWord(remaining)};
+
+            std::string column_name_left;
+            std::string column_name_right;
+            std::string locator;
+
+            const bool b1{GetTripleStringByDelimiterWord(remaining, column_name_left, string_before, column_name_right)};
+            const bool b2{GetTripleStringByDelimiterWord(remaining, column_name_left, string_after, column_name_right)};
+
+            if(b1 && !b2) locator = string_before;
+            if(b2 && !b1) locator = string_after;
+
+            if(b1 || b2)
+            {
+                // found
+                std::cout << "input is: " << remaining << std::endl;
+                std::cout << "delimiter is: " << locator << std::endl;
+                std::cout << "left: [" << column_name_left << "]" << std::endl;
+                std::cout << "right: [" << column_name_right << "]" << std::endl;
+
+                if(column_name_left.size() > 0 && column_name_right.size() > 0)
+                {
+                    std::cout << "parsed command: "
+                                << command_reorder_column << " "
+                                << column_name_left << " "
+                                << locator << " "
+                                << column_name_right << std::endl;
+                    
+                    for(auto& csvmatrix : m_csvmatrix)
+                    {
+                        if(locator == string_after)
+                        {
+                            csvmatrix.ReorderColumnAfter(column_name_right, column_name_left);
+                        }
+                        else if(locator == string_before)
+                        {
+                            //TODO csvmatrix.ReorderColumnBefore(column_name_right, column_name_left);
+                        }
+                    }
+                }
+                else
+                {
+                    std::string e
+                    {
+                        std::string("Error: column name cannot be null string")
+                    };
+                    throw std::runtime_error(e);
+                }
+            }
+            else
+            {
+                std::string e
+                {
+                    std::string("Error: Expected ")
+                        + string_before
+                        + std::string(" or ")
+                        + string_after
+                        + std::string(". Command format is: reorder column COLUMN_NAME [")
+                        + string_before + std::string("|") + string_after
+                        + std::string("] COLUMN_NAME")
+                };
+                throw std::runtime_error(e);
+            }
+        }
+
+
         // TODO: this should be in the same place as the read command?
         else if(command.find(command_write) == 0)
         {
@@ -985,6 +1288,24 @@ class MainClass
         else
         {
             return s.substr(0, pos);
+        }
+    }
+
+    bool GetTripleStringByDelimiterWord(const std::string& input,
+                                        std::string& left,
+                                        const std::string& delimiter,
+                                        std::string& right)
+    {
+        const auto pos{input.find(delimiter)};
+        if(pos == std::string::npos)
+        {
+            return false;
+        }
+        else
+        {
+            left = input.substr(0, pos - 1);
+            right = input.substr(pos + delimiter.length() + 1);
+            return true;
         }
     }
 
@@ -1077,6 +1398,8 @@ class MainClass
     static const std::string command_force_delimiter_on_write;
     static const std::string command_set_column;
     static const std::string command_add_column;
+    static const std::string command_delete_column;
+    static const std::string command_reorder_column;
     static const std::string command_write;
 
     // these are not commands but elements of grammar
@@ -1097,6 +1420,8 @@ const std::string MainClass::command_set_delimiter("set delimiter");
 const std::string MainClass::command_force_delimiter_on_write("set force delimiter on write");
 const std::string MainClass::command_set_column("set column");
 const std::string MainClass::command_add_column("add column");
+const std::string MainClass::command_delete_column("delete column");
+const std::string MainClass::command_reorder_column("reorder column");
 const std::string MainClass::command_write("write");
 
 const std::string MainClass::string_after("after");
