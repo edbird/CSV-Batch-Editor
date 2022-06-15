@@ -35,7 +35,7 @@ bool CSVMatrix::ColumnExists(const std::string& column_name) const
 }
 
 
-matrix_row_t::size_type CSVMatrix::GetColumnIndex(const std::string& column_name) const
+CSVMatrix::matrix_row_t::size_type CSVMatrix::GetColumnIndex(const std::string& column_name) const
 {
     if(m_matrix.size() > 0)
     {

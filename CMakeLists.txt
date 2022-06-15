@@ -9,4 +9,18 @@ project(csvbatcheditor)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(a.out main.cpp)
+add_executable(
+    a.out
+    main.cpp
+    mygetline.cpp
+    csvmatrix.cpp
+    csvmatrix_splitstring.cpp
+    csvmatrix_readfromfile.cpp
+    csvmatrix_writetofile.cpp
+    csvmatrix_addcolumn.cpp
+    csvmatrix_deletecolumn.cpp
+    csvmatrix_reorder.cpp
+    csvmatrix_getcolumnindex.cpp
+    csvmatrix_setcolumn.cpp
+    csvmatrix_debug.cpp
+)
