@@ -22,6 +22,17 @@ class CSVMatrix
 
     public:
 
+    friend void swap(CSVMatrix& l, CSVMatrix& r)
+    {
+        using std::swap;
+
+        swap(l.m_matrix, r.m_matrix);
+        swap(l.m_filename, r.m_filename);
+        swap(l.m_columns, r.m_columns);
+        swap(l.m_rows, r.m_rows);
+        swap(l.m_columns_set, r.m_columns_set);
+    }
+
     CSVMatrix()
         : m_columns(0)
         , m_rows(0)
@@ -35,6 +46,56 @@ class CSVMatrix
     {
 
     }
+
+    CSVMatrix(const CSVMatrix& other)
+        : m_matrix{other.m_matrix}
+        , m_filename{other.m_filename}
+        , m_columns{other.m_columns}
+        , m_rows{other.m_rows}
+        , m_columns_set{other.m_columns_set}
+    {
+
+    }
+
+    CSVMatrix operator=(CSVMatrix other)
+    {
+        swap(*this, other);
+
+        return *this;
+    }
+
+    CSVMatrix(CSVMatrix&& other) noexcept
+        : CSVMatrix()
+    {
+        swap(*this, other);
+    }
+
+
+    CSVMatrix ColumnCopy(const std::string& from_column_name, const std::string& to_column_name);
+
+    CSVMatrix ColumnCopy(const matrix_row_t::size_type start_column, const matrix_row_t::size_type count);
+
+    // should be inclusive of the start and end index
+    CSVMatrix ColumnCopy2(matrix_row_t::size_type start_column, matrix_row_t::size_type end_column);
+
+    // TODO: implement this square version which permits the number of rows and columns to be changed
+    // simultaniously
+    /*
+    CSVMatrix BlockCopy(matrix_row_t::size_type start_column, matrix_t::size_type end_column,
+                        matrix_t::size_type start_row, matrix_t end_row)
+    {
+        // there will be a more efficient way to do this which doesn't involve copying everything, 
+        // but it would require more complex logic to handle setting the number of rows and columns
+        // in advance, in addition to the m_columns_set variable
+
+        CSVMatrix tmp(*this);
+
+        for(const auto ix_row{end_row}; ix_row < m_rows; ++ ix_row)
+        {
+            // does m_rows change?
+        }
+    }
+    */
 
     std::vector<std::string> SplitStringByTokenQuoted(std::string s, const std::string& token, const std::string& token_quote);
 
@@ -61,6 +122,9 @@ class CSVMatrix
 
     void ReorderColumnAfter(const std::string& reference_column_name,
                             const std::string& column_to_move_name);
+
+    void ReorderColumnBefore(const std::string& reference_column_name,
+                             const std::string& column_to_move_name);
 
     matrix_row_t::size_type GetColumnIndex(const std::string& column_name) const;
 

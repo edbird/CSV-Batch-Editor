@@ -14,12 +14,3 @@ void myfunctions::EraseCRLF(std::string &s)
 }
 
 
-template<class CharT, class Traits, class Allocator>
-std::basic_istream<CharT, Traits>& myfunctions::GetLine(
-    std::basic_istream<CharT,Traits>& input,
-    std::basic_string<CharT,Traits,Allocator>& str)
-{
-    auto& ret = std::getline(input, str);
-    myfunctions::EraseCRLF(str);
-    return ret;
-}
