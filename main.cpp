@@ -316,6 +316,7 @@ class MainClass
             }
 
 
+            // create an instance of CSVMatrix object for each subdirectory which will be processed 
             if(m_subdirectory.size() > 0)
             {
                 for(const auto& subdirectory : m_subdirectory)
