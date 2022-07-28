@@ -17,6 +17,7 @@ add_executable(
     csvmatrix_splitstring.cpp
     csvmatrix_readfromfile.cpp
     csvmatrix_writetofile.cpp
+    csvmatrix_copycolumn.cpp
     csvmatrix_addcolumn.cpp
     csvmatrix_deletecolumn.cpp
     csvmatrix_reorder.cpp
